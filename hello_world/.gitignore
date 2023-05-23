@@ -1,0 +1,3 @@
+# default rust ignores in .gitignore
+target/
+Cargo.lock
