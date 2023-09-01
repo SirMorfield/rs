@@ -2,7 +2,7 @@ extern crate cc;
 use glob::glob;
 
 fn main() {
-	let paths : Vec<String> = glob("./src_c/**/*.c")
+	let paths : Vec<String> = glob("./cpp_src/**/*.cpp")
 		.unwrap()
 		.map(|path| path.unwrap().display().to_string())
 		.collect();
@@ -12,10 +12,12 @@ fn main() {
 	}
 
 	cc::Build::new()
+		.cpp(true)
+		.std("c++17")
 		.files(paths)
+		.include("./cpp_include")
 		.flag("-Wall")
 		.flag("-Wextra")
 		.flag("-Werror")
-		.flag("-Wno-unused-parameter")
-		.compile("main");
+		.compile("libmain.a");
 }
