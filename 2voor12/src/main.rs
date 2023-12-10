@@ -1,11 +1,11 @@
 use std::fs;
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Write};
 
 fn get_words(path: String) -> Vec<String> {
     fs::read_to_string(path)
         .expect("Should have been able to read the file")
         .split('\n')
-        .filter(|word| word.len() > 0)
+        .filter(|word| word.len() > 1)
         .map(|word| word.trim())
         .map(|word| word.to_string().to_lowercase())
         .collect()
@@ -13,6 +13,8 @@ fn get_words(path: String) -> Vec<String> {
 
 fn get_guess() -> String {
     let mut line = String::new();
+    print!("> ");
+    io::stdout().flush().unwrap();
     let stdin = io::stdin();
     if stdin.lock().read_line(&mut line).is_err() {
         return get_guess();
@@ -28,27 +30,23 @@ fn sort_to_vec(word: &String) -> Vec<char> {
 
 fn is_substring(real_word: &String, guess: &String) -> bool {
     let real_word = sort_to_vec(&real_word);
-    let guess = sort_to_vec(&guess);
-    let mut guess_i: usize = 0;
+    let mut guess = sort_to_vec(&guess);
 
     for real_word_c in real_word {
-        match guess.get(guess_i) {
-            Some(guess_c) => {
-                if *guess_c == real_word_c {
-                    guess_i += 1;
-                }
-            }
-            None => {
-                return true;
-            }
+        if guess.len() == 0 {
+            return true;
+        }
+        if real_word_c == guess[0] {
+            guess.remove(0);
         }
     }
-    return false;
+    guess.len() == 0
 }
 
 fn get_word_matches(guess: &String, words: &Vec<String>, count: usize) -> Vec<String> {
     words
         .iter()
+        .filter(|word| word.len() <= guess.len())
         .filter(|word| is_substring(word, &guess))
         .take(count)
         .map(|word| word.to_string())
@@ -57,7 +55,8 @@ fn get_word_matches(guess: &String, words: &Vec<String>, count: usize) -> Vec<St
 
 fn main() {
     let words = get_words("words.txt".to_string());
-    let count = 5;
+    println!("Loaded {} words", words.len());
+    let count = 10;
 
     loop {
         let guess = get_guess();
